@@ -1,20 +1,18 @@
-# mmFormer: Multimodal Medical Transformer for Incomplete Multimodal Learning of Brain Tumor Segmentation
-This is the implementation for the paper:
+# IMS2Trans
+This repo holds code for [Scalable Swin Transformer Network for Brain Tumor Segmentation from Incomplete MRI Modalities] ( Artificial Intelligence in Medicine, Submitted Article)
 
-[mmFormer: Multimodal Medical Transformer for Incomplete Multimodal Learning of Brain Tumor Segmentation](https://arxiv.org/abs/2206.02425)
 
-Accepted to MICCAI 2022 (Student Travel Award)
 
 ## Abstract
 
-Accurate brain tumor segmentation from Magnetic Resonance Imaging (MRI) is desirable to joint learning of multimodal images. However, in clinical practice, it is not always possible to acquire a complete set of MRIs, and the problem of missing modalities causes severe performance degradation in existing multimodal segmentation methods. In this work, we present the first attempt to exploit the Transformer for multimodal brain tumor segmentation that is robust to any combinatorial subset of available modalities. Concretely, we propose a novel multimodal Medical Transformer (mmFormer) for incomplete multimodal learning with three main components: the hybrid modality-specific encoders that bridge a convolutional encoder and an intra-modal Transformer for both local and global context modeling within each modality; an inter-modal Transformer to build and align the long-range correlations across modalities for modality-invariant features with global semantics corresponding to tumor region; a decoder that performs a progressive up-sampling and fusion with the modality-invariant features to generate robust segmentation. Besides, auxiliary regularizers are introduced in both encoder and decoder to further enhance the model's robustness to incomplete modalities. We conduct extensive experiments on the public BraTS 2018 dataset for brain tumor segmentation. The results demonstrate that the proposed mmFormer outperforms the state-of-the-art methods for incomplete multimodal brain tumor segmentation on almost all subsets of incomplete modalities, especially by an average 19.07% improvement of Dice on tumor segmentation with only one available modality. 
+Deep learning methods have shown great potential in processing multi-modal Magnetic Resonance Imaging (MRI) data, enabling improved accuracy in brain tumor segmentation. However, the performance of these methods can suffer when dealing with incomplete modalities, which is a common issue in clinical practice. Existing solutions, such as missing modality synthesis, knowledge distillation, and architecture-based methods, suffer from drawbacks such as long training times, high model complexity, and poor scalability. This paper proposes IMS2Trans, a novel lightweight scalable Swin Transformer network by utilizing a single encoder to extract latent feature maps from all available modalities. This unified feature extraction process enables efficient information sharing and fusion among the modalities, resulting in efficiency without compromising segmentation performance even in the presence of missing modalities. Evaluated on a popular benchmark of a brain tumor segmentation (BraTS) dataset with incomplete modalities, our model achieved higher average Dice similarity coefficient (DSC) scores for the whole tumor, tumor core, and enhancing tumor regions (86.57, 75.67, and 58.28, respectively), in comparison with a state-of-the-art model, i.e. mmFormer (86.45, 75.51, and 57.79, respectively). Moreover, our model exhibits significantly reduced complexity with only 4.47M parameters, 121.89G FLOPs, and a model size of 77.13MB, whereas mmFormer comprises 34.96M parameters, 265.79G FLOPs, and a model size of 559.74MB. These indicate our model, being light-weighted with significantly reduced parameters, is still able to achieve better performance than a state-of-the-art model.By leveraging a single encoder for processing the available modalities, IMS2Trans offers notable scalability advantages over methods that rely on multiple encoders. This streamlined approach eliminates the need for maintaining separate encoders for each modality, resulting in a lightweight and scalable network architecture. 
 
-![image](https://github.com/YaoZhang93/mmFormer/blob/main/figs/overview.png)
 
 ## Usage. 
 
 * Environment Preparation
-  * Download the cuda and pytorch from [Google Drive](https://drive.google.com/drive/folders/1x6z7Ot3Xfrg1dokR9cdeoRSKbQJRTpv7?usp=sharing).
+  * Download the python 3.6+ and cuda 9.0+ and pytorch 1.2+.
+  * Please use the command `pip install -r requirements.txt` for the dependencies.
   * Set the environment path in `job.sh`.
 * Data Preparation
 - Download the data from [MICCAI 2018 BraTS Challenge](https://www.med.upenn.edu/sbia/brats2018/data.html).
@@ -25,25 +23,23 @@ Accurate brain tumor segmentation from Magnetic Resonance Imaging (MRI) is desir
   - Train the model by `sh job.sh`. 
 
 * Test
-  * The trained model should be located in `mmFormer/output`. 
+  * The trained model should be located in `IMS2Trans/output`. 
   * Uncomment the evaluation command in  `job.sh` and then inference on the test data by `sh job.sh`.
-  * The pre-trained [model](https://drive.google.com/file/d/1oKgjXzSfWOG5VT64EE1lfV6rdtjkyC5B/view?usp=sharing) and [log](https://drive.google.com/file/d/165u-MGAiS0_PkExXRkI4KrainRlc_Ibo/view?usp=sharing) are available.
+  * The pre-trained model located in `IMS2Trans/model` is available.
 
 ## Citation
 
 If you find this code and paper useful for your research, please kindly cite our paper.
 
 ```
-@article{zhang2022mmformer,
-  title={mmFormer: Multimodal Medical Transformer for Incomplete Multimodal Learning of Brain Tumor Segmentation},
-  author={Zhang, Yao and He, Nanjun and Yang, Jiawei and Li, Yuexiang and Wei, Dong and Huang, Yawen and Zhang, Yang and He, Zhiqiang and Zheng, Yefeng},
-  journal={arXiv preprint arXiv:2206.02425},
-  year={2022}
+@article{zhang2023ims2trans,
+  title={Scalable Swin Transformer Network for Brain Tumor Segmentation from Incomplete MRI Modalities},
+  author={Dongsong Zhang, Changjian Wang, Tianhua Chen, Weidao Chen,
+and Yiqing Shen},
+  journal={Submitted to Artificial Intelligence in Medicine},
+  year={2023}
 }
 ```
 
-## Reference
 
-* [TransBTS](https://github.com/Wenxuan-1119/TransBTS)
-* [RFNet](https://github.com/dyh127/RFNet)
 

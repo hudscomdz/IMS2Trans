@@ -35,8 +35,7 @@ If you find this code and paper useful for your research, please kindly cite our
 ```
 @article{zhang2023ims2trans,
   title={Scalable Swin Transformer Network for Brain Tumor Segmentation from Incomplete MRI Modalities},
-  author={Dongsong Zhang, Changjian Wang, Tianhua Chen, Weidao Chen,
-and Yiqing Shen},
+  author={Dongsong Zhang, Changjian Wang, Tianhua Chen, Weidao Chen, and Yiqing Shen},
   journal={Submitted to Artificial Intelligence in Medicine},
   year={2023}
 }

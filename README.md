@@ -25,8 +25,8 @@ Deep learning methods have shown great potential in processing multi-modal Magne
 * Test
   * The trained model should be located in `IMS2Trans/output`. 
   * Uncomment the evaluation command in  `job.sh` and then inference on the test data by `sh job.sh`.
-  * The pre-trained model `model_last.pth` located in `IMS2Trans/model` is available.
-    Note that because this .pth file is larger than 50M, downloading as a ZIP does not include the file, and you'll need to use Git over the command line to get the full objects, or click [this link](https://github.com/hudscomdz/IMS2Trans/raw/main/model/model_last.pth) to download.
+  * The pre-trained model `model_last.pth` located in `IMS2Trans/model` is available.\
+    Note that because this model_last.pth file is larger than 50M, downloading as a ZIP does not include the file, and you'll need to use Git over the command line to get the full objects, or click [this link](https://github.com/hudscomdz/IMS2Trans/raw/main/model/model_last.pth) to download.
 
 ## Citation
 

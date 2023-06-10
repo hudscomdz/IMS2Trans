@@ -1,5 +1,5 @@
 # IMS2Trans
-This repo holds code for ${\color{blue}Scalable \space Swin \space Transformer \space Network \space for \space Brain \space Tumor \space Segmentation \space from \space Incomplete \space MRI \space Modalities}$ ( Artificial Intelligence in Medicine, Submitted Article)
+This repo holds code for **Scalable Swin Transformer Network for Brain Tumor Segmentation from Incomplete MRI Modalities** ( Artificial Intelligence in Medicine, Submitted Article)
 
 
 

@@ -20,7 +20,7 @@ class Base(object):
 
         if not reuse:
             im = img if isinstance(img, np.ndarray) else img[0]
-            shape = im.shape[1:dim+1]
+            shape = im.shape[1 : dim + 1]
             self.sample(*shape)
 
         if isinstance(img, collections.Sequence):
@@ -29,7 +29,8 @@ class Base(object):
         return self.tf(img)
 
     def __str__(self):
-        return 'Identity()'
+        return "Identity()"
+
 
 Identity = Base
 
@@ -46,7 +47,7 @@ class Rot90(Base):
         i, j = self.axes
 
         # shape: no first dim
-        i, j = i-1, j-1
+        i, j = i - 1, j - 1
         shape[i], shape[j] = shape[j], shape[i]
 
         return shape
@@ -55,19 +56,23 @@ class Rot90(Base):
         return np.rot90(img, axes=self.axes)
 
     def __str__(self):
-        return 'Rot90(axes=({}, {})'.format(*self.axes)
+        return "Rot90(axes=({}, {})".format(*self.axes)
 
 
 class RandomRotion(Base):
-    def __init__(self,angle_spectrum=10):
-        assert isinstance(angle_spectrum,int)
-        axes = [(1, 0), (2, 1),(2, 0)]
+    def __init__(self, angle_spectrum=10):
+        assert isinstance(angle_spectrum, int)
+        axes = [(1, 0), (2, 1), (2, 0)]
         self.angle_spectrum = angle_spectrum
         self.axes = axes
 
-    def sample(self,*shape):
-        self.axes_buffer = self.axes[np.random.choice(list(range(len(self.axes))))] # choose the random direction
-        self.angle_buffer = np.random.randint(-self.angle_spectrum, self.angle_spectrum) # choose the random direction
+    def sample(self, *shape):
+        self.axes_buffer = self.axes[
+            np.random.choice(list(range(len(self.axes))))
+        ]  # choose the random direction
+        self.angle_buffer = np.random.randint(
+            -self.angle_spectrum, self.angle_spectrum
+        )  # choose the random direction
         return list(shape)
 
     def tf(self, img, k=0):
@@ -75,17 +80,37 @@ class RandomRotion(Base):
 
         for bs in range(bsize):
             if k == 0:
-                channels = [rotate(img[bs,:,:,:,c], self.angle_buffer, axes=self.axes_buffer, reshape=False, order=0, mode='constant', cval=-1) for c in
-                            range(img.shape[4])]
-                img[bs,...] = np.stack(channels, axis=-1)
+                channels = [
+                    rotate(
+                        img[bs, :, :, :, c],
+                        self.angle_buffer,
+                        axes=self.axes_buffer,
+                        reshape=False,
+                        order=0,
+                        mode="constant",
+                        cval=-1,
+                    )
+                    for c in range(img.shape[4])
+                ]
+                img[bs, ...] = np.stack(channels, axis=-1)
 
             if k == 1:
-                img[bs,...] = rotate(img[bs,...], self.angle_buffer, axes=self.axes_buffer, reshape=False, order=0, mode='constant', cval=-1)
+                img[bs, ...] = rotate(
+                    img[bs, ...],
+                    self.angle_buffer,
+                    axes=self.axes_buffer,
+                    reshape=False,
+                    order=0,
+                    mode="constant",
+                    cval=-1,
+                )
 
         return img
 
     def __str__(self):
-        return 'RandomRotion(axes={},Angle:{}'.format(self.axes_buffer,self.angle_buffer)
+        return "RandomRotion(axes={},Angle:{}".format(
+            self.axes_buffer, self.angle_buffer
+        )
 
 
 class Flip(Base):
@@ -96,35 +121,36 @@ class Flip(Base):
         return np.flip(img, self.axis)
 
     def __str__(self):
-        return 'Flip(axis={})'.format(self.axis)
+        return "Flip(axis={})".format(self.axis)
+
 
 class RandomFlip(Base):
     def __init__(self, axis=0):
-        self.axis = (1,2,3)
+        self.axis = (1, 2, 3)
         self.x_buffer = None
         self.y_buffer = None
         self.z_buffer = None
 
     def sample(self, *shape):
-        self.x_buffer = np.random.choice([True,False])
-        self.y_buffer = np.random.choice([True,False])
-        self.z_buffer = np.random.choice([True,False])
+        self.x_buffer = np.random.choice([True, False])
+        self.y_buffer = np.random.choice([True, False])
+        self.z_buffer = np.random.choice([True, False])
         return list(shape)
 
-    def tf(self,img,k=0):
+    def tf(self, img, k=0):
         if self.x_buffer:
-            img = np.flip(img,axis=self.axis[0])
+            img = np.flip(img, axis=self.axis[0])
         if self.y_buffer:
-            img = np.flip(img,axis=self.axis[1])
+            img = np.flip(img, axis=self.axis[1])
         if self.z_buffer:
-            img = np.flip(img,axis=self.axis[2])
+            img = np.flip(img, axis=self.axis[2])
         return img
 
 
 class RandSelect(Base):
     def __init__(self, prob=0.5, tf=None):
         self.prob = prob
-        self.ops  = tf if isinstance(tf, collections.Sequence) else (tf, )
+        self.ops = tf if isinstance(tf, collections.Sequence) else (tf,)
         self.buff = False
 
     def sample(self, *shape):
@@ -146,8 +172,8 @@ class RandSelect(Base):
         if len(self.ops) == 1:
             ops = str(self.ops[0])
         else:
-            ops = '[{}]'.format(', '.join([str(op) for op in self.ops]))
-        return 'RandSelect({}, {})'.format(self.prob, ops)
+            ops = "[{}]".format(", ".join([str(op) for op in self.ops]))
+        return "RandSelect({}, {})".format(self.prob, ops)
 
 
 class CenterCrop(Base):
@@ -157,80 +183,87 @@ class CenterCrop(Base):
 
     def sample(self, *shape):
         size = self.size
-        start = [(s -size)//2 for s in shape]
-        self.buffer = [slice(None)] + [slice(s, s+size) for s in start]
+        start = [(s - size) // 2 for s in shape]
+        self.buffer = [slice(None)] + [slice(s, s + size) for s in start]
         return [size] * len(shape)
 
     def tf(self, img, k=0):
         return img[tuple(self.buffer)]
 
     def __str__(self):
-        return 'CenterCrop({})'.format(self.size)
+        return "CenterCrop({})".format(self.size)
+
 
 class RandCrop(CenterCrop):
     def sample(self, *shape):
         size = self.size
-        start = [random.randint(0, s-size) for s in shape]
-        self.buffer = [slice(None)] + [slice(s, s+size) for s in start]
-        return [size]*len(shape)
+        start = [random.randint(0, s - size) for s in shape]
+        self.buffer = [slice(None)] + [slice(s, s + size) for s in start]
+        return [size] * len(shape)
 
     def __str__(self):
-        return 'RandCrop({})'.format(self.size)
+        return "RandCrop({})".format(self.size)
 
 
 class RandCrop3D(CenterCrop):
     def sample(self, *shape):
         # print(self.size)
-        assert len(self.size)==3
-        if not isinstance(self.size,list):
+        assert len(self.size) == 3
+        if not isinstance(self.size, list):
             size = list(self.size)
         else:
             size = self.size
-        start = [random.randint(0, s-i) for i,s in zip(size,shape)]
-        self.buffer = [slice(None)] + [slice(s, s+k) for s,k in zip(start,size)]
+        start = [random.randint(0, s - i) for i, s in zip(size, shape)]
+        self.buffer = [slice(None)] + [slice(s, s + k) for s, k in zip(start, size)]
         return size
 
     def __str__(self):
-        return 'RandCrop({})'.format(self.size)
+        return "RandCrop({})".format(self.size)
 
 
 class RandomIntensityChange(Base):
-    def __init__(self,factor):
-        shift,scale = factor
-        assert (shift >0) and (scale >0)
+    def __init__(self, factor):
+        shift, scale = factor
+        assert (shift > 0) and (scale > 0)
         self.shift = shift
         self.scale = scale
 
-    def tf(self,img,k=0):
-        if k==1:
+    def tf(self, img, k=0):
+        if k == 1:
             return img
 
-        shift_factor = np.random.uniform(-self.shift,self.shift,size=[1,img.shape[1],1,1,img.shape[4]])
-        scale_factor = np.random.uniform(1.0 - self.scale, 1.0 + self.scale,size=[1,img.shape[1],1,1,img.shape[4]])
+        shift_factor = np.random.uniform(
+            -self.shift, self.shift, size=[1, img.shape[1], 1, 1, img.shape[4]]
+        )
+        scale_factor = np.random.uniform(
+            1.0 - self.scale,
+            1.0 + self.scale,
+            size=[1, img.shape[1], 1, 1, img.shape[4]],
+        )
         return img * scale_factor + shift_factor
 
     def __str__(self):
-        return 'random intensity shift per channels on the input image, including'
+        return "random intensity shift per channels on the input image, including"
 
 
 class Pad(Base):
     def __init__(self, pad):
         self.pad = pad
-        self.px = tuple(zip([0]*len(pad), pad))
+        self.px = tuple(zip([0] * len(pad), pad))
 
     def sample(self, *shape):
         shape = list(shape)
         for i in range(len(shape)):
-            shape[i] += self.pad[i+1]
+            shape[i] += self.pad[i + 1]
 
         return shape
 
     def tf(self, img, k=0):
         dim = len(img.shape)
-        return np.pad(img, self.px[:dim], mode='constant')
+        return np.pad(img, self.px[:dim], mode="constant")
 
     def __str__(self):
-        return 'Pad(({}, {}, {}))'.format(*self.pad)
+        return "Pad(({}, {}, {}))".format(*self.pad)
 
 
 class Noise(Base):
@@ -245,20 +278,22 @@ class Noise(Base):
             return img
 
         if self.channel:
-            shape = [1] if len(img.shape) < self.dim+2 else [img.shape[-1]]
+            shape = [1] if len(img.shape) < self.dim + 2 else [img.shape[-1]]
         else:
             shape = img.shape
-        return img * np.exp(self.sigma * torch.randn(shape, dtype=torch.float32).numpy())
+        return img * np.exp(
+            self.sigma * torch.randn(shape, dtype=torch.float32).numpy()
+        )
 
     def __str__(self):
-        return 'Noise()'
+        return "Noise()"
 
 
 class GaussianBlur(Base):
     def __init__(self, dim, sigma=Constant(1.5), app=-1):
         self.dim = dim
         self.sigma = sigma
-        self.eps   = 0.001
+        self.eps = 0.001
         self.app = app
 
     def tf(self, img, k=0):
@@ -270,19 +305,19 @@ class GaussianBlur(Base):
             sig = self.sigma.sample()
             # sample each channel saperately to avoid correlations
             if sig > self.eps:
-                if len(img.shape) == self.dim+2:
+                if len(img.shape) == self.dim + 2:
                     C = img.shape[-1]
                     for c in range(C):
-                        img[n,..., c] = ndimage.gaussian_filter(img[n, ..., c], sig)
-                elif len(img.shape) == self.dim+1:
+                        img[n, ..., c] = ndimage.gaussian_filter(img[n, ..., c], sig)
+                elif len(img.shape) == self.dim + 1:
                     img[n] = ndimage.gaussian_filter(img[n], sig)
                 else:
-                    raise ValueError('image shape is not supported')
+                    raise ValueError("image shape is not supported")
 
         return img
 
     def __str__(self):
-        return 'GaussianBlur()'
+        return "GaussianBlur()"
 
 
 class ToNumpy(Base):
@@ -295,7 +330,7 @@ class ToNumpy(Base):
         return img.numpy()
 
     def __str__(self):
-        return 'ToNumpy()'
+        return "ToNumpy()"
 
 
 class ToTensor(Base):
@@ -309,7 +344,7 @@ class ToTensor(Base):
         return torch.from_numpy(img)
 
     def __str__(self):
-        return 'ToTensor'
+        return "ToTensor"
 
 
 class TensorType(Base):
@@ -324,13 +359,13 @@ class TensorType(Base):
         return img.type(self.types[k])
 
     def __str__(self):
-        s = ', '.join([str(s) for s in self.types])
-        return 'TensorType(({}))'.format(s)
+        s = ", ".join([str(s) for s in self.types])
+        return "TensorType(({}))".format(s)
 
 
 class NumpyType(Base):
     def __init__(self, types, num=-1):
-        self.types = types # ('float32', 'int64')
+        self.types = types  # ('float32', 'int64')
         self.num = num
 
     def tf(self, img, k=0):
@@ -340,8 +375,8 @@ class NumpyType(Base):
         return img.astype(self.types[k])
 
     def __str__(self):
-        s = ', '.join([str(s) for s in self.types])
-        return 'NumpyType(({}))'.format(s)
+        s = ", ".join([str(s) for s in self.types])
+        return "NumpyType(({}))".format(s)
 
 
 class Normalize(Base):
@@ -358,13 +393,13 @@ class Normalize(Base):
         return img
 
     def __str__(self):
-        return 'Normalize()'
+        return "Normalize()"
 
 
 class Compose(Base):
     def __init__(self, ops):
         if not isinstance(ops, collections.Sequence):
-            ops = ops,
+            ops = (ops,)
         self.ops = ops
 
     def sample(self, *shape):
@@ -379,7 +414,5 @@ class Compose(Base):
         return img
 
     def __str__(self):
-        ops = ', '.join([str(op) for op in self.ops])
-        return 'Compose([{}])'.format(ops)
-
-
+        ops = ", ".join([str(op) for op in self.ops])
+        return "Compose([{}])".format(ops)

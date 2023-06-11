@@ -7,13 +7,14 @@ import logging
 
 path = os.path.dirname(__file__)
 
+
 class AttrDict(dict):
     def __getattr__(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
         elif name in self:
             return self[name]
-        elif name.startswith('__'):
+        elif name.startswith("__"):
             raise AttributeError(name)
         else:
             self[name] = AttrDict()
@@ -37,14 +38,14 @@ class AttrDict(dict):
             if k not in self or not isinstance(v, dict):
                 self[k] = v
                 continue
-            AttrDict.__dict__['merge'](self[k], v)
+            AttrDict.__dict__["merge"](self[k], v)
 
     def strip(self):
         if not isinstance(self, dict):
             if isinstance(self, list) or isinstance(self, tuple):
                 self = str(tuple(self))
             return self
-        return {k: AttrDict.__dict__['strip'](v) for k, v in self.items()}
+        return {k: AttrDict.__dict__["strip"](v) for k, v in self.items()}
 
     @staticmethod
     def cast(d):
@@ -67,32 +68,35 @@ def parse(d):
         return d
     return AttrDict({k: parse(v) for k, v in d.items()})
 
+
 def load(fname):
-    with open(fname, 'r') as f:
+    with open(fname, "r") as f:
         ret = parse(yaml.load(f))
     return ret
 
 
 def setup(args, log):
-    args.name = 'hetero'
+    args.name = "hetero"
     ldir = args.savepath
     if not os.path.exists(ldir):
         os.makedirs(ldir)
 
-    lfile = args.name + '_' + log + '.txt' if log else args.name + '.txt'
+    lfile = args.name + "_" + log + ".txt" if log else args.name + ".txt"
     lfile = os.path.join(ldir, lfile)
 
-    logging.basicConfig(level=logging.INFO,
-            format='%(asctime)s %(message)s', filename=lfile)
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(message)s", filename=lfile
+    )
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
-    console.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
-    if not logging.getLogger('').handlers:
-        logging.getLogger('').addHandler(console)
+    console.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    if not logging.getLogger("").handlers:
+        logging.getLogger("").addHandler(console)
+
 
 class Parser(AttrDict):
-    def __init__(self, cfg_name=''):
-        #self.add_cfg('PATH')
+    def __init__(self, cfg_name=""):
+        # self.add_cfg('PATH')
         if cfg_name:
             self.add_cfg(cfg_name)
 
@@ -100,18 +104,18 @@ class Parser(AttrDict):
         self.merge(vars(args))
         return self
 
-    def set_logging(self, log=''):
+    def set_logging(self, log=""):
         setup(self, log)
 
     def add_cfg(self, cfg, args=None, update=False):
         if os.path.isfile(cfg):
             fname = cfg
-            cfg   = os.path.splitext(os.path.basename(cfg))[0]
+            cfg = os.path.splitext(os.path.basename(cfg))[0]
         else:
-            fname = os.path.join(path, '../experiments', cfg + '.yaml')
+            fname = os.path.join(path, "../experiments", cfg + ".yaml")
 
         self.merge(load(fname))
-        self['name'] = cfg
+        self["name"] = cfg
 
         if args is not None:
             self.add_args(args)
@@ -122,12 +126,12 @@ class Parser(AttrDict):
         return self
 
     def save_cfg(self, fname):
-        with open(fname, 'w') as f:
+        with open(fname, "w") as f:
             yaml.dump(self.strip(), f, default_flow_style=False)
 
     def getdir(self):
-        if 'name' not in self:
-            self['name'] = 'testing'
+        if "name" not in self:
+            self["name"] = "testing"
 
         checkpoint_dir = os.path.join(self.ckpt_dir, self.name)
         return checkpoint_dir
@@ -137,7 +141,7 @@ class Parser(AttrDict):
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
 
-        fname = os.path.join(checkpoint_dir, 'cfg.yaml')
+        fname = os.path.join(checkpoint_dir, "cfg.yaml")
         self.save_cfg(fname)
 
         return checkpoint_dir

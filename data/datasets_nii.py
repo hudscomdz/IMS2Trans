@@ -5,7 +5,15 @@ from torch.utils.data import Dataset
 from .rand import Uniform
 from .transforms import Rot90, Flip, Identity, Compose
 from .transforms import GaussianBlur, Noise, Normalize, RandSelect
-from .transforms import RandCrop, CenterCrop, Pad, RandCrop3D, RandomRotion, RandomFlip, RandomIntensityChange
+from .transforms import (
+    RandCrop,
+    CenterCrop,
+    Pad,
+    RandCrop3D,
+    RandomRotion,
+    RandomFlip,
+    RandomIntensityChange,
+)
 from .transforms import NumpyType
 from .data_utils import pkload
 
@@ -25,20 +33,35 @@ for i in range(260, 336):
     LGG.append(str(i).zfill(3))
 
 mask_array = np.array(
-    [[True, False, False, False], [False, True, False, False], [False, False, True, False], [False, False, False, True],
-     [True, True, False, False], [True, False, True, False], [True, False, False, True], [False, True, True, False],
-     [False, True, False, True], [False, False, True, True], [True, True, True, False], [True, True, False, True],
-     [True, False, True, True], [False, True, True, True],
-     [True, True, True, True]]) #todo
+    [
+        [True, False, False, False],
+        [False, True, False, False],
+        [False, False, True, False],
+        [False, False, False, True],
+        [True, True, False, False],
+        [True, False, True, False],
+        [True, False, False, True],
+        [False, True, True, False],
+        [False, True, False, True],
+        [False, False, True, True],
+        [True, True, True, False],
+        [True, True, False, True],
+        [True, False, True, True],
+        [False, True, True, True],
+        [True, True, True, True],
+    ]
+)  # todo
 
 
 class Brats_loadall_nii(Dataset):
-    def __init__(self, transforms='', root=None, modal='all', num_cls=4, train_file='train.txt'):
+    def __init__(
+        self, transforms="", root=None, modal="all", num_cls=4, train_file="train.txt"
+    ):
 
-        '''Yao'''
-        patients_dir = glob.glob(join(root, 'vol', '*_vol.npy'))
-        patients_dir.sort(key=lambda x: x.split('/')[-1][:-8])
-        print('###############', len(patients_dir))
+        """Yao"""
+        patients_dir = glob.glob(join(root, "vol", "*_vol.npy"))
+        patients_dir.sort(key=lambda x: x.split("/")[-1][:-8])
+        print("###############", len(patients_dir))
         n_patients = len(patients_dir)
         pid_idx = np.arange(n_patients)
         np.random.seed(0)
@@ -50,22 +73,22 @@ class Brats_loadall_nii(Dataset):
             if i != 0:
                 for idx in fold:
                     volpaths.append(patients_dir[idx])
-        datalist = [x.split('/')[-1].split('_vol')[0] for x in volpaths]
-        '''Yao'''
+        datalist = [x.split("/")[-1].split("_vol")[0] for x in volpaths]
+        """Yao"""
 
         self.volpaths = volpaths
-        self.transforms = eval(transforms or 'Identity()')
+        self.transforms = eval(transforms or "Identity()")
         self.names = datalist
         self.num_cls = num_cls
-        if modal == 'flair':
+        if modal == "flair":
             self.modal_ind = np.array([0])
-        elif modal == 't1ce':
+        elif modal == "t1ce":
             self.modal_ind = np.array([1])
-        elif modal == 't1':
+        elif modal == "t1":
             self.modal_ind = np.array([2])
-        elif modal == 't2':
+        elif modal == "t2":
             self.modal_ind = np.array([3])
-        elif modal == 'all':
+        elif modal == "all":
             self.modal_ind = np.array([0, 1, 2, 3])
 
     def __getitem__(self, index):
@@ -75,12 +98,14 @@ class Brats_loadall_nii(Dataset):
 
         x = np.load(volpath)
 
-        segpath = volpath.replace('vol', 'seg')
+        segpath = volpath.replace("vol", "seg")
         y = np.load(segpath)
         x, y = x[None, ...], y[None, ...]
         x, y = self.transforms([x, y])
 
-        x = np.ascontiguousarray(x.transpose(0, 4, 1, 2, 3))  # [Bsize,channels,Height,Width,Depth]
+        x = np.ascontiguousarray(
+            x.transpose(0, 4, 1, 2, 3)
+        )  # [Bsize,channels,Height,Width,Depth]
         _, H, W, Z = np.shape(y)
         y = np.reshape(y, (-1))
         one_hot_targets = np.eye(self.num_cls)[y]
@@ -101,10 +126,10 @@ class Brats_loadall_nii(Dataset):
 
 
 class Brats_loadall_test_nii(Dataset):
-    def __init__(self, transforms='', root=None, modal='all', test_file='test.txt'):
-        '''Yao'''
-        patients_dir = glob.glob(join(root, 'vol', '*_vol.npy'))
-        patients_dir.sort(key=lambda x: x.split('/')[-1][:-8])
+    def __init__(self, transforms="", root=None, modal="all", test_file="test.txt"):
+        """Yao"""
+        patients_dir = glob.glob(join(root, "vol", "*_vol.npy"))
+        patients_dir.sort(key=lambda x: x.split("/")[-1][:-8])
         n_patients = len(patients_dir)
         pid_idx = np.arange(n_patients)
         np.random.seed(0)
@@ -116,27 +141,29 @@ class Brats_loadall_test_nii(Dataset):
             if i == 0:
                 for idx in fold:
                     volpaths.append(patients_dir[idx])
-        datalist = [x.split('/')[-1].split('_vol')[0] for x in volpaths]
-        '''Yao'''
-        to_path = os.path.join(root, 'samples')
+        datalist = [x.split("/")[-1].split("_vol")[0] for x in volpaths]
+        """Yao"""
+        to_path = os.path.join(root, "samples")
         if not os.path.isdir(to_path):
             os.makedirs(to_path)
         for x in volpaths:
-            if not os.path.isfile(os.path.join(to_path, x.replace('vol', 'seg').split('/')[-1])):
-                copy(x.replace('vol', 'seg'), to_path)
+            if not os.path.isfile(
+                os.path.join(to_path, x.replace("vol", "seg").split("/")[-1])
+            ):
+                copy(x.replace("vol", "seg"), to_path)
 
         self.volpaths = volpaths
-        self.transforms = eval(transforms or 'Identity()')
+        self.transforms = eval(transforms or "Identity()")
         self.names = datalist
-        if modal == 'flair':
+        if modal == "flair":
             self.modal_ind = np.array([0])
-        elif modal == 't1ce':
+        elif modal == "t1ce":
             self.modal_ind = np.array([1])
-        elif modal == 't1':
+        elif modal == "t1":
             self.modal_ind = np.array([2])
-        elif modal == 't2':
+        elif modal == "t2":
             self.modal_ind = np.array([3])
-        elif modal == 'all':
+        elif modal == "all":
             self.modal_ind = np.array([0, 1, 2, 3])
 
     def __getitem__(self, index):
@@ -144,12 +171,14 @@ class Brats_loadall_test_nii(Dataset):
         volpath = self.volpaths[index]
         name = self.names[index]
         x = np.load(volpath)
-        segpath = volpath.replace('vol', 'seg')
+        segpath = volpath.replace("vol", "seg")
         y = np.load(segpath).astype(np.uint8)
         x, y = x[None, ...], y[None, ...]
         x, y = self.transforms([x, y])
 
-        x = np.ascontiguousarray(x.transpose(0, 4, 1, 2, 3))  # [Bsize,channels,Height,Width,Depth]
+        x = np.ascontiguousarray(
+            x.transpose(0, 4, 1, 2, 3)
+        )  # [Bsize,channels,Height,Width,Depth]
         y = np.ascontiguousarray(y)
 
         x = x[:, self.modal_ind, :, :, :]
@@ -163,26 +192,26 @@ class Brats_loadall_test_nii(Dataset):
 
 
 class Brats_loadall_val_nii(Dataset):
-    def __init__(self, transforms='', root=None, settype='train', modal='all'):
-        data_file_path = os.path.join(root, 'val.txt')
-        with open(data_file_path, 'r') as f:
+    def __init__(self, transforms="", root=None, settype="train", modal="all"):
+        data_file_path = os.path.join(root, "val.txt")
+        with open(data_file_path, "r") as f:
             datalist = [i.strip() for i in f.readlines()]
         datalist.sort()
         volpaths = []
         for dataname in datalist:
-            volpaths.append(os.path.join(root, 'vol', dataname + '_vol.npy'))
+            volpaths.append(os.path.join(root, "vol", dataname + "_vol.npy"))
         self.volpaths = volpaths
-        self.transforms = eval(transforms or 'Identity()')
+        self.transforms = eval(transforms or "Identity()")
         self.names = datalist
-        if modal == 'flair':
+        if modal == "flair":
             self.modal_ind = np.array([0])
-        elif modal == 't1ce':
+        elif modal == "t1ce":
             self.modal_ind = np.array([1])
-        elif modal == 't1':
+        elif modal == "t1":
             self.modal_ind = np.array([2])
-        elif modal == 't2':
+        elif modal == "t2":
             self.modal_ind = np.array([3])
-        elif modal == 'all':
+        elif modal == "all":
             self.modal_ind = np.array([0, 1, 2, 3])
 
     def __getitem__(self, index):
@@ -190,12 +219,14 @@ class Brats_loadall_val_nii(Dataset):
         volpath = self.volpaths[index]
         name = self.names[index]
         x = np.load(volpath)
-        segpath = volpath.replace('vol', 'seg')
+        segpath = volpath.replace("vol", "seg")
         y = np.load(segpath).astype(np.uint8)
         x, y = x[None, ...], y[None, ...]
         x, y = self.transforms([x, y])
 
-        x = np.ascontiguousarray(x.transpose(0, 4, 1, 2, 3))  # [Bsize,channels,Height,Width,Depth]
+        x = np.ascontiguousarray(
+            x.transpose(0, 4, 1, 2, 3)
+        )  # [Bsize,channels,Height,Width,Depth]
         y = np.ascontiguousarray(y)
         x = x[:, self.modal_ind, :, :, :]
 
